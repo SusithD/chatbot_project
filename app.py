@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, jsonify
 from transformers import AutoModelForQuestionAnswering, AutoTokenizer, pipeline
 
 app = Flask(__name__)
@@ -15,10 +15,15 @@ def home():
 
 @app.route('/ask', methods=['POST'])
 def ask():
-    question = request.form['question']
-    context = "Provide a context from your data or user input."
+    data = request.get_json()  # Get the JSON data from the request
+    question = data.get('question')  # Get the question from the JSON
+    context = data.get('context')  # Get the context from the JSON
+    
+    if not question or not context:
+        return jsonify({"error": "Question and context are required."}), 400
+
     result = qa_pipeline(question=question, context=context)
-    return {"answer": result['answer']}
+    return jsonify({"answer": result['answer']})
 
 if __name__ == '__main__':
     app.run(debug=True)

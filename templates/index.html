@@ -33,7 +33,7 @@
                 },
                 body: JSON.stringify({ question, context })
             });
-            
+
             const data = await response.json();
             if (data.answer) {
                 document.getElementById("answer").innerText = data.answer;
