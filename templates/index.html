@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+</head>
+<body>
+    <h1>Ask the Chatbot!</h1>
+    <form id="chat-form">
+        <label for="question">Question:</label><br>
+        <input type="text" id="question" name="question"><br><br>
+        
+        <label for="context">Context:</label><br>
+        <textarea id="context" name="context" rows="4" cols="50"></textarea><br><br>
+        
+        <button type="submit">Ask</button>
+    </form>
+
+    <h2>Answer:</h2>
+    <p id="answer"></p>
+
+    <script>
+        document.getElementById("chat-form").addEventListener("submit", async function(event) {
+            event.preventDefault();
+            const question = document.getElementById("question").value;
+            const context = document.getElementById("context").value;
+
+            const response = await fetch("/ask", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ question, context })
+            });
+            
+            const data = await response.json();
+            if (data.answer) {
+                document.getElementById("answer").innerText = data.answer;
+            } else {
+                document.getElementById("answer").innerText = data.error;
+            }
+        });
+    </script>
+</body>
+</html>
