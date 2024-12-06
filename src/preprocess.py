@@ -1,65 +1,42 @@
-import json
+import pandas as pd
+import os
+from sklearn.model_selection import train_test_split
 from datasets import Dataset
 
-def load_data(file_path):
-    with open(file_path, 'r') as f:
-        data = json.load(f)
-    return data
+def preprocess_data(file_path):
+    """
+    Load and preprocess the dataset from a CSV file.
+    The dataset should have `Instruction`, `Input`, and `Output` columns.
+    """
+    # Load the CSV file
+    data = pd.read_csv(file_path)
 
-def prepare_data(data):
-    questions = []
-    answers = []
-    start_positions = []
-    end_positions = []
+    # Combine Instruction and Input into a single text prompt for the chatbot
+    data['dialogue'] = data.apply(
+        lambda row: f"User: {row['Instruction']} {row['Input']}\nChatbot: {row['Output']}", axis=1
+    )
 
-    for item in data:
-        if 'annotations' in item:
-            for annotation in item['annotations']:
-                print(annotation)  # Add this line to inspect the structure
-                annotation_type = annotation.get('type')
+    # Split into training and evaluation datasets
+    train_data, eval_data = train_test_split(data, test_size=0.2, random_state=42)
 
-                if annotation_type == 'singleAnswer':
-                    answer = annotation.get('answer', [])
-                    if answer:
-                        questions.append(item['question'])
-                        answers.append(answer[0])
-                        start_positions.append(0)  # Dummy start position
-                        end_positions.append(len(answer[0]) - 1)  # Dummy end position
-                    else:
-                        print(f"Skipping singleAnswer: No answer for question: {item['question']}")
-                
-                elif annotation_type == 'multipleQAs':
-                    for qa in annotation.get('qaPairs', []):
-                        qa_question = qa.get('question')
-                        qa_answer = qa.get('answer', [])
-                        if qa_answer:
-                            questions.append(qa_question)
-                            answers.append(qa_answer[0])
-                            start_positions.append(0)  # Dummy start position
-                            end_positions.append(len(qa_answer[0]) - 1)  # Dummy end position
-                        else:
-                            print(f"Skipping multipleQA: No answer for question: {qa_question}")
-    print(f"Prepared {len(questions)} question-answer pairs.")
-    return Dataset.from_dict({
-        'question': questions,
-        'answer': answers,
-        'start_positions': start_positions,
-        'end_positions': end_positions
-    })
+    # Convert to Hugging Face Dataset format
+    train_dataset = Dataset.from_pandas(train_data[['dialogue']])
+    eval_dataset = Dataset.from_pandas(eval_data[['dialogue']])
 
-
+    return train_dataset, eval_dataset
 
 if __name__ == "__main__":
-    # Load and preprocess the training data
-    train_data = load_data("data/train.json")
-    print(f"Loaded {len(train_data)} examples from train.json")
-    prepared_train_data = prepare_data(train_data)
-    prepared_train_data.save_to_disk("data/prepared_train")
-    print(f"Saved prepared training data with {len(prepared_train_data)} examples")
+    # File path to the dataset
+    dataset_path = "data/Python Programming Questions Dataset.csv"
 
-    # Load and preprocess the dev data
-    dev_data = load_data("data/dev.json")
-    print(f"Loaded {len(dev_data)} examples from dev.json")
-    prepared_dev_data = prepare_data(dev_data)
-    prepared_dev_data.save_to_disk("data/prepared_dev")
-    print(f"Saved prepared dev data with {len(prepared_dev_data)} examples")
+    if not os.path.exists(dataset_path):
+        raise FileNotFoundError(f"Dataset not found at {dataset_path}")
+
+    # Preprocess the data
+    train_dataset, eval_dataset = preprocess_data(dataset_path)
+
+    # Save preprocessed datasets
+    train_dataset.save_to_disk("data/prepared_train")
+    eval_dataset.save_to_disk("data/prepared_dev")
+
+    print(f"Preprocessed and saved train and eval datasets.")

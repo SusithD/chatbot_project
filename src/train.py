@@ -1,63 +1,75 @@
-from transformers import AutoModelForQuestionAnswering, AutoTokenizer, Trainer, TrainingArguments
+from transformers import AutoTokenizer, AutoModelForCausalLM, Trainer, TrainingArguments, DataCollatorForSeq2Seq
 from datasets import load_from_disk
 
-def train_model():
-    model_name = "distilbert-base-uncased"
-    model = AutoModelForQuestionAnswering.from_pretrained(model_name)
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
+def train_model(train_dataset_path, eval_dataset_path, output_dir="models/finetuned_gemma"):
+    """
+    Fine-tune a chatbot model on the provided dataset.
+    """
+    model_name = "Salesforce/codegen-350M-multi"  # Example
 
-    # Correct the path to the preprocessed dataset
-    train_data = load_from_disk("data/prepared_train")  # Load from 'data/prepared_train'
-    eval_data = load_from_disk('data/prepared_dev')  # Load from 'data/prepared_dev'
+    # Authenticate and use model from Hugging Face
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForCausalLM.from_pretrained(model_name)
+
+    # Set pad_token to eos_token
+    tokenizer.pad_token = tokenizer.eos_token
 
     def tokenize(batch):
-        # Tokenize questions and answers, including start and end positions
-        tokenized_batch = tokenizer(batch['question'], padding=True, truncation=True, max_length=512)
-        
-        # Handle start and end positions during tokenization (mapping answers to tokenized indices)
-        start_positions = []
-        end_positions = []
-        for i, answer in enumerate(batch['answer']):
-            start_pos = batch['start_positions'][i]  # Get the start position for the answer
-            end_pos = batch['end_positions'][i]  # Get the end position for the answer
+        """
+        Tokenizes the dialogues with padding and truncation, max length 512.
+        """
+        inputs = tokenizer(batch['dialogue'], padding=True, truncation=True, max_length=512)
+        inputs['labels'] = inputs['input_ids'].copy()
+        return inputs
 
-            # Adjust the positions based on tokenized input (if answer spans multiple tokens)
-            start_positions.append(start_pos)
-            end_positions.append(end_pos)
-        
-        tokenized_batch['start_positions'] = start_positions
-        tokenized_batch['end_positions'] = end_positions
-        return tokenized_batch
+    # Load preprocessed datasets
+    train_dataset = load_from_disk(train_dataset_path)
+    eval_dataset = load_from_disk(eval_dataset_path)
 
-    # Tokenize both training and evaluation datasets
-    train_data = train_data.map(tokenize, batched=True)
-    eval_data = eval_data.map(tokenize, batched=True)
+    # Apply tokenization
+    train_dataset = train_dataset.map(tokenize, batched=True)
+    eval_dataset = eval_dataset.map(tokenize, batched=True)
 
-    # Training arguments
+    # Use DataCollatorForSeq2Seq for dynamic padding
+    data_collator = DataCollatorForSeq2Seq(tokenizer, model=model)
+
+    # Define training arguments
     training_args = TrainingArguments(
-        output_dir="models/finetuned_model",  # Save the model here
-        evaluation_strategy="epoch",  # Use evaluation at the end of each epoch
-        learning_rate=2e-5,
-        per_device_train_batch_size=16,
+        output_dir=output_dir,
+        evaluation_strategy="epoch",
+        learning_rate=5e-5,
+        per_device_train_batch_size=4,
         num_train_epochs=3,
         weight_decay=0.01,
+        fp16=True,
+        gradient_accumulation_steps=8,
+        save_total_limit=2,
+        dataloader_num_workers=4,
+        logging_dir=f"{output_dir}/logs",
+        logging_steps=500,
     )
 
-    # Initialize the Trainer
+    # Initialize Trainer
     trainer = Trainer(
         model=model,
         args=training_args,
-        train_dataset=train_data,  # Use 'train_data' here
-        eval_dataset=eval_data,  # Use 'eval_data' here
+        train_dataset=train_dataset,
+        eval_dataset=eval_dataset,
         tokenizer=tokenizer,
+        data_collator=data_collator,
     )
 
     # Train the model
     trainer.train()
 
     # Save the fine-tuned model and tokenizer
-    model.save_pretrained("models/finetuned_model")  # Save the fine-tuned model
-    tokenizer.save_pretrained("models/finetuned_model")  # Save the tokenizer
+    model.save_pretrained(output_dir)
+    tokenizer.save_pretrained(output_dir)
 
 if __name__ == "__main__":
-    train_model()
+    # Paths to preprocessed datasets
+    train_dataset_path = "data/prepared_train"
+    eval_dataset_path = "data/prepared_dev"
+
+    # Train the model
+    train_model(train_dataset_path, eval_dataset_path)

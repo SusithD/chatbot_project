@@ -2,19 +2,11 @@
   "citation": "",
   "description": "",
   "features": {
-    "question": {
+    "dialogue": {
       "dtype": "string",
       "_type": "Value"
     },
-    "answer": {
-      "dtype": "string",
-      "_type": "Value"
-    },
-    "start_positions": {
-      "dtype": "int64",
-      "_type": "Value"
-    },
-    "end_positions": {
+    "__index_level_0__": {
       "dtype": "int64",
       "_type": "Value"
     }
