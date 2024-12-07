@@ -3,3 +3,4 @@ models/
 node_modules/
 data/prepared_dev/
 data/prepared_train/
+data/prepared_train/cache-b04efa1e2f6e9028.arrow
