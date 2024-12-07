@@ -1,3 +1,5 @@
 chatbot_env/
 models/
 node_modules/
+data/prepared_dev/
+data/prepared_train/
