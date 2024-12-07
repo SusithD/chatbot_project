@@ -40,23 +40,23 @@
     </style>
 </head>
 
-<body class="bg-gray-900 text-white font-inter min-h-screen flex">
+<body class="bg-black text-gray-200 font-inter min-h-screen flex">
     <!-- Sidebar -->
-    <aside class="w-80 bg-gradient-to-b from-gray-800 to-gray-700 p-6 flex flex-col space-y-6 shadow-xl">
+    <aside class="w-80 bg-gradient-to-b from-gray-900 to-gray-800 p-6 flex flex-col space-y-6 shadow-lg">
         <!-- Profile Section -->
-        <div class="flex items-center space-x-4 hover:bg-gray-600 p-2 rounded-lg transition-all duration-300">
+        <div class="flex items-center space-x-4 hover:bg-gray-700 p-2 rounded-lg transition-all duration-300">
             <img src="https://via.placeholder.com/50" alt="Avatar"
-                class="w-14 h-14 rounded-full shadow-lg transform hover:scale-110 transition-transform duration-300">
+                class="w-14 h-14 rounded-full shadow-md transform hover:scale-105 transition-transform duration-300">
             <div>
                 <h3 class="text-xl font-semibold">Susith Deshan</h3>
-                <p class="text-sm text-green-400">Online</p>
+                <p class="text-sm text-green-500">Online</p>
             </div>
         </div>
 
         <!-- Navigation Section -->
         <nav class="flex-grow overflow-y-auto">
             <ul id="sidebar-chats" class="space-y-3">
-                <li class="text-gray-500 text-center">No chats yet!</li>
+                <li class="text-gray-400 text-center">No chats yet!</li>
             </ul>
         </nav>
 
@@ -72,26 +72,24 @@
     </aside>
 
     <!-- Chat Section -->
-    <main class="flex-1 flex flex-col items-center justify-center p-6 space-y-6 bg-gray-900">
+    <main class="flex-1 flex flex-col items-center justify-center p-6 space-y-6 bg-black">
         <!-- Chat Box -->
         <div id="chat-box"
-            class="w-full max-w-5xl h-[500px] bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700 overflow-y-auto flex flex-col space-y-4">
-            <p class="text-gray-400 text-center">Start the conversation by typing below!</p>
+            class="w-full max-w-5xl h-[500px] bg-gray-900 p-6 rounded-lg shadow-md border border-gray-800 overflow-y-auto flex flex-col space-y-4">
+            <p class="text-gray-500 text-center">Start the conversation by typing below!</p>
         </div>
 
-        <!-- Chat Form -->
-        <form id="chat-form" class="w-full max-w-5xl flex space-x-4">
-            <input type="text" id="question" name="question"
-                class="flex-1 p-4 rounded-lg bg-gray-800 text-white placeholder-gray-400 border border-gray-700 focus:ring-4 focus:ring-blue-500 focus:outline-none"
-                placeholder="Type your message..." required>
-            <button type="submit"
-                class="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg shadow-lg hover:from-blue-600 hover:to-blue-700 focus:ring-4 focus:ring-blue-400">
-                Send
-            </button>
-        </form>
+       <!-- Chat Form -->
+       <form id="chat-form" class="w-full max-w-5xl flex space-x-4">
+        <input type="text" id="question" name="question"
+            class="flex-1 p-4 rounded-lg bg-gray-900 text-gray-200 placeholder-gray-500 border border-gray-800 focus:ring-4 focus:ring-gray-500 focus:outline-none"
+            placeholder="Type your message..." required>
+        <button type="submit"
+            class="px-6 py-3 bg-gradient-to-r from-gray-700 to-gray-800 text-gray-200 font-semibold rounded-lg shadow-md hover:from-gray-600 hover:to-gray-700 focus:ring-4 focus:ring-gray-500">
+            Send
+        </button>
+    </form>
     </main>
-
-
 
     <script>
         const chatBox = document.getElementById("chat-box");
