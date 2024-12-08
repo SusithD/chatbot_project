@@ -24,7 +24,7 @@ db = client.chatbotDB
 chat_collection = db.chats
 
 # Load the fine-tuned model and tokenizer
-model_path = "models/finetuned_gemma"  # Path where your fine-tuned model is saved
+model_path = "models/finetuned_gemma"
 logging.info(f"Loading fine-tuned model from: {model_path}")
 try:
     tokenizer = AutoTokenizer.from_pretrained(model_path)
