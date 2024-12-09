@@ -49,7 +49,6 @@ def train_model(train_dataset_path, eval_dataset_path, output_dir="models/finetu
         logging_steps=500,
     )
 
-    # Initialize Trainer
     trainer = Trainer(
         model=model,
         args=training_args,
